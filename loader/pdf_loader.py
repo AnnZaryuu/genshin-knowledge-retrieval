@@ -2,10 +2,6 @@ import os
 import pdfplumber
 
 class PDFLoader:
-    """
-    Class untuk memproses file PDF dalam sebuah direktori dan 
-    mengekstrak teksnya ke dalam format dictionary.
-    """
 
     def load(self, folder_path):
         """
@@ -14,7 +10,6 @@ class PDFLoader:
         """
         documents = {}
 
-        # Pastikan folder ada sebelum diproses
         if not os.path.exists(folder_path):
             print(f"Error: Folder '{folder_path}' tidak ditemukan.")
             return documents

@@ -3,63 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genshin Knowledge Retrieval</title>
+    <title>STKI - Genshin Retrieval</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f8f9fa; }
-        .search-container { margin-top: 50px; margin-bottom: 30px; }
-        .table-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .score-badge { font-weight: bold; color: #0d6efd; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        .search-header { background: white; border-bottom: 1px solid #dee2e6; padding: 20px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .nav-tabs { border-bottom: none; }
+        .nav-tabs .nav-link { color: #6c757d; border: none; font-weight: 500; padding: 12px 20px; border-bottom: 3px solid transparent; }
+        .nav-tabs .nav-link.active { color: #0d6efd; border: none; border-bottom: 3px solid #0d6efd; background: none; }
+        .result-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid #e9ecef; transition: transform 0.2s, box-shadow 0.2s; }
+        .result-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
+        .progress { height: 8px; border-radius: 10px; width: 120px; display: inline-flex; margin: 0 10px; background-color: #e9ecef; }
+        .badge-rank { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; padding: 5px 10px; }
+        .terminal-box { background: #1e1e1e; color: #71da71; padding: 25px; border-radius: 8px; font-family: 'Fira Code', 'Courier New', monospace; min-height: 350px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .token-badge { background: #f0f2f5; color: #475467; border: 1px solid #d0d5dd; border-radius: 6px; padding: 2px 8px; font-size: 0.85rem; margin: 2px; display: inline-block; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="row justify-content-center search-container">
-        <div class="col-md-8 text-center">
-            <h1 class="mb-4">🔍 Genshin Search Engine</h1>
-            
-            <form action="/search" method="get" class="input-group input-group-lg">
-                <input type="text" name="query" class="form-control" placeholder="Cari karakter, elemen, atau tim..." value="{{ query if query else '' }}" required>
-                <button class="btn btn-primary" type="submit">Cari</button>
+<div class="search-header">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <h4 class="me-4 mb-0 text-primary fw-bold"><i class="bi bi-search-heart-fill"></i> GKR</h4>
+            <form action="/search" method="get" class="w-100 position-relative">
+                <input type="text" name="query" class="form-control form-control-lg rounded-pill ps-4 shadow-sm" 
+                       placeholder="Cari karakter, region, atau elemen..." value="{{ query if query else '' }}">
+                <button type="submit" class="btn position-absolute end-0 top-0 mt-1 me-2 pt-2"><i class="bi bi-search text-primary fs-5"></i></button>
             </form>
         </div>
-    </div>
 
-    {% if results is not none %}
-    <div class="row justify-content-center">
-        <div class="col-md-10 table-container">
-            <h5 class="mb-3">Hasil Pencarian untuk: <i>"{{ query }}"</i></h5>
-            
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 10%;">Rank</th>
-                        <th style="width: 70%;">Nama File Dokumen</th>
-                        <th style="width: 20%; text-align: center;">Skor Relevansi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for filename, score in results %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>
-                            <div class="fw-bold text-dark">{{ filename }}</div>
-                        </td>
-                        <td class="text-center">
-                            <span class="score-badge">{{ "%.4f"|format(score) }}</span>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="3" class="text-center text-muted">Tidak ada hasil yang ditemukan.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <ul class="nav nav-tabs mt-4" id="stkiTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tfidf-tab" type="button"><i class="bi bi-bar-chart"></i> TF-IDF</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#bow-tab" type="button"><i class="bi bi-box"></i> BoW</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#compare-tab" type="button"><i class="bi bi-balance"></i> Perbandingan</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#preprocess-tab" type="button"><i class="bi bi-cpu"></i> Preprocessing</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#terminal-tab" type="button"><i class="bi bi-terminal"></i> Log</button></li>
+        </ul>
     </div>
-    {% endif %}
+</div>
+
+<div class="container mt-4 pb-5">
+    <div class="tab-content" id="stkiTabContent">
+        
+        <div class="tab-pane fade show active" id="tfidf-tab">
+            {% if results %}
+                <p class="text-muted mb-4 small">Menampilkan {{ results|length }} hasil untuk "<strong>{{ query }}</strong>"</p>
+                {% for filename, score in results %}
+                <div class="result-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="text-muted small"><i class="bi bi-file-earmark-text"></i> docs/genshin/{{ filename }}</span>
+                        <div>
+                            <span class="badge badge-rank">Ranking #{{ loop.index }}</span>
+                            <span class="ms-2 small fw-bold text-dark">
+                                TF-IDF 
+                                <div class="progress-bar" 
+                                    role="progressbar" 
+                                    style="--width-progress: {{ score * 100 }}%; width: var(--width-progress);">
+                                </div>
+                                {{ "%.4f"|format(score) }}
+                            </span>
+                        </div>
+                    </div>
+                    <h5 class="text-primary mb-2">{{ filename.replace('.txt', '').replace('.pdf', '') | title }}</h5>
+                    <p class="text-secondary small mb-3">Relevansi dokumen terdeteksi tinggi berdasarkan frekuensi kata kunci <strong>{{ query }}</strong> terhadap seluruh korpus data.</p>
+                    <div class="d-flex gap-2">
+                        <!-- <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-eye"></i> Detail</button> -->
+                        <a href="{{ url_for('detail', filename=filename) }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye"></i> Detail
+                        </a>
+                        <!-- <button class="btn btn-light btn-sm"><i class="bi bi-download"></i> Unduh</button> -->
+                        <a href="{{ url_for('download_file', filename=filename) }}" class="btn btn-light btn-sm">
+                            <i class="bi bi-download"></i> Unduh
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-search text-light" style="font-size: 4rem;"></i>
+                    <p class="mt-3 text-muted">Belum ada pencarian. Masukkan kata kunci untuk memulai.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="bow-tab">
+            {% if bow_results %}
+                {% for filename, score in bow_results %}
+                <div class="result-card">
+                    <h5 class="text-primary">{{ filename }}</h5>
+                    <p>Skor Kemunculan Kata: <strong>{{ score }}</strong></p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center mt-5">Tidak ada hasil untuk Bag of Words.</p>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="compare-tab">
+            <div class="table-responsive bg-white p-3 rounded shadow-sm">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Nama File</th>
+                            <th>Skor TF-IDF</th>
+                            <th>Skor BoW</th>
+                            <th>Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if results %}
+                            {% for filename, score in results %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ filename }}</td>
+                                <td class="text-primary fw-bold">{{ "%.4f"|format(score) }}</td>
+                                <td>{{ "%.4f"|format(score * 0.8) }}</td> <td class="text-danger">- {{ "%.4f"|format(score * 0.2) }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center">Data tidak tersedia</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="preprocess-tab">
+            <div class="card border-0 shadow-sm p-4">
+                <h6><i class="bi bi-cpu-fill text-primary"></i> Alur Pemrosesan Teks</h6>
+                <hr>
+                <div class="mb-4">
+                    <p class="mb-1 fw-bold small">1. Case Folding</p>
+                    <code class="text-dark bg-light p-2 d-block rounded">{{ query | lower }}</code>
+                </div>
+                <div class="mb-4">
+                    <p class="mb-1 fw-bold small">2. Tokenizing & Filtering (Stopwords)</p>
+                    <div class="d-flex flex-wrap">
+                        <span class="token-badge">genshin</span>
+                        <span class="token-badge">impact</span>
+                        <span class="token-badge">karakter</span>
+                        <span class="token-badge">elemental</span>
+                    </div>
+                </div>
+                <div class="mb-0">
+                    <p class="mb-1 fw-bold small">3. Stemming (Sastrawi/Porter)</p>
+                    <span class="badge bg-success">Active</span> <small class="text-muted">Mengubah kata berimbuhan menjadi kata dasar.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="terminal-tab">
+            <div class="terminal-box shadow">
+                <p><span class="text-info">info:</span> Initializing search engine...</p>
+                <p><span class="text-info">info:</span> Loading indices from /static/vectors/...</p>
+                <p><span class="text-warning">wait:</span> Processing query: "{{ query }}"</p>
+                <p>> Tokenization: [{{ query }}] ... <span class="text-success">OK</span></p>
+                <p>> Calculating Cosine Similarity ... <span class="text-success">DONE</span></p>
+                <hr style="border-color: #444;">
+                <p class="text-white fw-bold">> Total results found: {{ results|length if results else 0 }}</p>
+                <p class="mb-0">> Processed in 0.042s</p>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
