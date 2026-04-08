@@ -1,0 +1,76 @@
+# Python cache
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# VS Code
+
+.vscode/
+
+# PyCharm
+
+.idea/
+
+# MacOS
+
+.DS_Store
+
+# Windows
+
+Thumbs.db
+
+# Jupyter Notebook
+
+.ipynb_checkpoints/
+
+# Logs
+
+*.log
+
+# Environment variables
+
+.env
+
+# Build files
+
+dist/
+build/
+*.egg-info/
+
+# Temporary files
+
+*.tmp
+*.swp
+
+# NLTK data (optional if downloaded locally)
+
+nltk_data/
+
+# Dataset cache (optional)
+
+*.cache
+
+# Python compiled files
+
+*.pyo
+*.pyd
+
+# Flask session
+
+instance/
+
+# Coverage reports
+
+htmlcov/
+.coverage
+coverage.xml
